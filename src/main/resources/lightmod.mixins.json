@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "xyz.kohara.lightmod.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"refmap": "lightmod.refmap.json",
+	"mixins": [
+	],
+	"client": [
+		"GameRendererMixin",
+		"RecolorLigthmapMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
