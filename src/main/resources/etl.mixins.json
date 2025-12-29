@@ -4,13 +4,16 @@
 	"package": "xyz.kohara.etl.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"refmap": "etl.refmap.json",
+	"plugin": "xyz.kohara.etl.MixinPlugin",
 	"mixins": [
 	],
 	"client": [
 		"GameRendererMixin",
-		"LevelRendererMixin",
 		"RecolorLigthmapMixin",
-		"TrimRendererMixin"
+		"SkyColorMixin",
+		"StarRendererMixin",
+		"TrimRendererMixin",
+		"compat.AlexsCavesCompat"
 	],
 	"injectors": {
 		"defaultRequire": 1
