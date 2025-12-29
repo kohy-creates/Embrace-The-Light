@@ -1,14 +1,16 @@
 {
 	"required": true,
 	"minVersion": "0.8",
-	"package": "xyz.kohara.lightmod.mixin",
+	"package": "xyz.kohara.etl.mixin",
 	"compatibilityLevel": "JAVA_8",
-	"refmap": "lightmod.refmap.json",
+	"refmap": "etl.refmap.json",
 	"mixins": [
 	],
 	"client": [
 		"GameRendererMixin",
-		"RecolorLigthmapMixin"
+		"LevelRendererMixin",
+		"RecolorLigthmapMixin",
+		"TrimRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

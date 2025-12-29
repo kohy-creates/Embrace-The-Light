@@ -1,4 +1,4 @@
-package xyz.kohara.lightmod.mixin;
+package xyz.kohara.etl.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Minecraft;

@@ -1,7 +1,7 @@
-package xyz.kohara.lightmod.mixin;
+package xyz.kohara.etl.mixin;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LightTexture;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,26 +11,37 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.kohara.etl.Config;
+
+import java.util.function.Supplier;
 
 @Mixin(LightTexture.class)
 public abstract class RecolorLigthmapMixin {
+
+    @Unique
+    private static final Supplier<Double> etl$undergroundLightAmount = Config.UNDERGROUND_LIGHT_AMOUNT;
+    @Unique
+    private static final Supplier<Double> etl$fullMoonLightAmount = Config.FULL_MOON;
+    @Unique
+    private static final Supplier<Double> etl$waningWaxingMoonLightAmount = Config.WANING_WAXING_MOON;
+    @Unique
+    private static final Supplier<Double> etl$quarterMoonLightAmount = Config.QUARTER_MOON;
+    @Unique
+    private static final Supplier<Double> etl$crescentMoonLightAmount = Config.CRESCENT_MOON;
+    @Unique
+    private static final Supplier<Double> etl$newMoonLightAmount = Config.UNDERGROUND_LIGHT_AMOUNT;
 
     @Shadow
     private static void clampColor(Vector3f pColor) {
     }
 
     @Unique
-    private int warmerLigthmap$lightLevel(int block, int sky) {
+    private int etl$lightLevel(int block, int sky) {
         return Math.max(sky, block);
     }
 
     @Unique
-    private long warmerLigthmap$getTimeOfDay(long dayTime) {
-        return dayTime % 24000;
-    }
-
-    @Unique
-    private float warmerLigthmap$getSunTransition(int timeOfDay) {
+    private float etl$getSunTransition(int timeOfDay) {
         // Sunset: fade from 1.0 → 0.0
         if (timeOfDay >= 12040 && timeOfDay <= 13670) {
             float t = (timeOfDay - 12040) / (13670f - 12040f);
@@ -54,23 +65,23 @@ public abstract class RecolorLigthmapMixin {
     }
 
     @Unique
-    private boolean warmerLigthmap$isNight(int time) {
+    private boolean etl$isNight(int time) {
         return (time >= 12040 && time <= 23961);
     }
 
     @Unique
-    private Vector3f warmerLigthmap$getMoonPhaseMultiplier(int phase) {
-        float col = 1f;
+    private Vector3f etl$getMoonPhaseMultiplier(int phase) {
+        // Full moon - default
+        float col = etl$fullMoonLightAmount.get().floatValue();
         switch (phase) {
-            // Full moon uses default
             // Waning/Waxing Gibbous
-            case 1, 7 -> col = 0.8f;
+            case 1, 7 -> col = etl$waningWaxingMoonLightAmount.get().floatValue();
             // Quarter
-            case 2, 6 -> col = 0.6f;
+            case 2, 6 -> col = etl$quarterMoonLightAmount.get().floatValue();
             // Crescent
-            case 3, 5 -> col = 0.4f;
+            case 3, 5 -> col = etl$crescentMoonLightAmount.get().floatValue();
             // New
-            case 4 -> col = 0.2f;
+            case 4 -> col = etl$newMoonLightAmount.get().floatValue();
         }
         return new Vector3f(col, col, col);
     }
@@ -112,45 +123,44 @@ public abstract class RecolorLigthmapMixin {
         int skylight = i;
         float nightVisScale = f5;
 
+        int time = Math.toIntExact(clientlevel.getDayTime() % 24000);
+
         Vector3f warmTint = new Vector3f(0.36F, 0.13F, -0.15F);
         float warmness = blocklight / 15f * // increase w/ blocklight
                 (1f - vector3f.x() * (1 - skylight / 15f)) * // decrease in skylight w/ dayness
-                Math.min((15 - blocklight) / 9f, 4f); // decrease for the 3 highest block light levels
+                Math.min((15 - blocklight) / 9f, 1f); // decrease for the 3 highest block light levels
         warmTint.mul(warmness);
+
         warmTint.add(1f, 1f, 1f);
+
         vector3f1.mul(warmTint);
 
-        // Change from Nicer Skies - 'dramatic' factor does not affect GUI elements
+        // Change - 'dramatic' factor does not affect GUI elements
         if (blocklight != 15) {
             Vector3f dramaticFactor = (Vector3f) vector3f1.clone();
             dramaticFactor.mul(0.2f);
-            dramaticFactor.add(0.8f,
-                    0.8f,
-                    0.8f);
+            dramaticFactor.add(0.8f, 0.8f, 0.8f);
+            vector3f1.mul(dramaticFactor);
 
-            vector3f1.mul(dramaticFactor.x(),
-                    dramaticFactor.y(),
-                    dramaticFactor.z());
-
-            int time = Math.toIntExact(clientlevel.getDayTime() % 24000);
-            if (warmerLigthmap$isNight(time)) {
+            if (etl$isNight(time) && clientlevel.effects().skyType() == DimensionSpecialEffects.SkyType.NORMAL) {
                 Vector3f nightDarkness = new Vector3f(1f, 1f, 1f);
                 float darkness = Math.max(Math.max(
                         blocklight / 15f,
-                        warmerLigthmap$getSunTransition(time)), nightVisScale);
+                        etl$getSunTransition(time)), nightVisScale);
                 nightDarkness.mul(darkness);
-                nightDarkness.add(warmerLigthmap$getMoonPhaseMultiplier(clientlevel.getMoonPhase()));
+                nightDarkness.add(etl$getMoonPhaseMultiplier(clientlevel.getMoonPhase()));
                 clampColor(nightDarkness);
                 vector3f1.mul(nightDarkness);
             }
         }
 
-        // Change - caves and closed spaces are darker
+        // New - caves and closed spaces are darker
         if (skylight != 15) {
             Vector3f caveDarkness = new Vector3f(1f, 1f, 1f);
-            float darkness = Math.max(warmerLigthmap$lightLevel(blocklight, skylight) / 15f, nightVisScale);
+            float darkness = Math.max(etl$lightLevel(blocklight, skylight) / 15f, nightVisScale);
             caveDarkness.mul(darkness);
-            caveDarkness.add(0.6f, 0.6f, 0.6f);
+            float undergroundLightAmount = etl$undergroundLightAmount.get().floatValue();
+            caveDarkness.add(undergroundLightAmount, undergroundLightAmount, undergroundLightAmount);
             clampColor(caveDarkness);
             vector3f1.mul(caveDarkness);
         }
