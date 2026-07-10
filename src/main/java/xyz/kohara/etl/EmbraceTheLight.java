@@ -4,9 +4,11 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.util.Mth;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ public class EmbraceTheLight {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC, MOD_ID + "-client.toml");
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(Config.class);
     }
 
     // Those are for day/night transitions
@@ -78,20 +81,20 @@ public class EmbraceTheLight {
         return 1.0f - Math.abs(2.0f * getSunTransition(time) - 1.0f);
     }
 
-    public static Vector3f getMoonPhaseMultiplier(int phase) {
+    public static float getMoonPhaseMultiplier(int phase) {
         // Full moon - default
-        float col = Config.FULL_MOON.get().floatValue();
+        float col = Config.fullMoon;
         switch (phase) {
             // Waning/Waxing Gibbous
-            case 1, 7 -> col = Config.WANING_WAXING_MOON.get().floatValue();
+            case 1, 7 -> col = Config.waningWaxingMoon;
             // Quarter
-            case 2, 6 -> col = Config.QUARTER_MOON.get().floatValue();
+            case 2, 6 -> col = Config.quarterMoon;
             // Crescent
-            case 3, 5 -> col = Config.CRESCENT_MOON.get().floatValue();
+            case 3, 5 -> col = Config.crescentMoon;
             // New
-            case 4 -> col = Config.NEW_MOON.get().floatValue();
+            case 4 -> col = Config.newMoon;
         }
-        return new Vector3f(col, col, col);
+        return col;
     }
 
 }

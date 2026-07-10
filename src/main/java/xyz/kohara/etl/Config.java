@@ -2,25 +2,29 @@ package xyz.kohara.etl;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Config {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static final ForgeConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue EMISSIVE_TRIMS;
+    private static final ForgeConfigSpec.BooleanValue EMISSIVE_TRIMS;
 
-    public static final ForgeConfigSpec.DoubleValue UNDERGROUND_LIGHT_AMOUNT;
+    private static final ForgeConfigSpec.DoubleValue UNDERGROUND_LIGHT_AMOUNT;
 
-    public static final ForgeConfigSpec.DoubleValue FULL_MOON;
-    public static final ForgeConfigSpec.DoubleValue WANING_WAXING_MOON;
-    public static final ForgeConfigSpec.DoubleValue QUARTER_MOON;
-    public static final ForgeConfigSpec.DoubleValue CRESCENT_MOON;
-    public static final ForgeConfigSpec.DoubleValue NEW_MOON;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BANNED_DIMENSIONS;
+    private static final ForgeConfigSpec.DoubleValue FULL_MOON;
+    private static final ForgeConfigSpec.DoubleValue WANING_WAXING_MOON;
+    private static final ForgeConfigSpec.DoubleValue QUARTER_MOON;
+    private static final ForgeConfigSpec.DoubleValue CRESCENT_MOON;
+    private static final ForgeConfigSpec.DoubleValue NEW_MOON;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> BANNED_DIMENSIONS;
 
-    public static final ForgeConfigSpec.BooleanValue ALEXS_CAVES_ENABLE_COLORED_LIGHT;
+    private static final ForgeConfigSpec.BooleanValue ALEXS_CAVES_ENABLE_COLORED_LIGHT;
 
     static {
         BUILDER.comment("\"Embrace The Light!\" Client Config");
@@ -68,14 +72,53 @@ public class Config {
         SPEC = BUILDER.build();
     }
 
+    public static boolean emissiveTrims;
+    public static boolean alexsCavesColoredLight;
+
+    public static float undergroundLightAmount;
+
+    public static float fullMoon;
+    public static float waningWaxingMoon;
+    public static float quarterMoon;
+    public static float crescentMoon;
+    public static float newMoon;
+
+    public static Set<ResourceLocation> bannedDimensions;
+
+    public static void bake() {
+        emissiveTrims = EMISSIVE_TRIMS.get();
+        alexsCavesColoredLight = ALEXS_CAVES_ENABLE_COLORED_LIGHT.get();
+
+        undergroundLightAmount = UNDERGROUND_LIGHT_AMOUNT.get().floatValue();
+
+        fullMoon = FULL_MOON.get().floatValue();
+        waningWaxingMoon = WANING_WAXING_MOON.get().floatValue();
+        quarterMoon = QUARTER_MOON.get().floatValue();
+        crescentMoon = CRESCENT_MOON.get().floatValue();
+        newMoon = NEW_MOON.get().floatValue();
+
+        bannedDimensions = BANNED_DIMENSIONS.get()
+                .stream()
+                .map(ResourceLocation::parse)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
     private static boolean isValidResourceLocation(Object o) {
         if (!(o instanceof String s)) return false;
         return ResourceLocation.isValidResourceLocation(s);
     }
 
-    public static List<ResourceLocation> getBannedDimensions() {
-        return BANNED_DIMENSIONS.get().stream()
-                .map(ResourceLocation::parse)
-                .toList();
+    @SubscribeEvent
+    public static void onConfigLoad(ModConfigEvent.Loading event) {
+        if (event.getConfig().getSpec() == Config.SPEC) {
+            Config.bake();
+        }
+    }
+
+    @SubscribeEvent
+    public static void onConfigReload(ModConfigEvent.Reloading event) {
+        if (event.getConfig().getSpec() == Config.SPEC) {
+            Config.bake();
+        }
     }
 }

@@ -9,7 +9,7 @@
 	],
 	"client": [
 		"GameRendererMixin",
-		"RecolorLigthmapMixin",
+      "RecolorLightmapMixin",
 		"SkyColorMixin",
 		"StarRendererMixin",
 		"TrimRendererMixin",

@@ -29,7 +29,7 @@ public class TrimRendererMixin {
             float pRed, float pBlue, float pGreen, float pAlpha,
             Operation<Void> original
     ) {
-        int lightAmount = (Config.EMISSIVE_TRIMS.get()) ? 0xF000F0 : pPackedLight;
+        int lightAmount = (Config.emissiveTrims) ? 0xF000F0 : pPackedLight;
         original.call(instance, poseStack, vertexConsumer, lightAmount, overlayTexture, pRed, pBlue, pGreen, pAlpha);
     }
 }
