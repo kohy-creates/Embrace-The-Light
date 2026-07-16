@@ -1,7 +1,11 @@
 package xyz.kohara.etl.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.util.RandomSource;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
@@ -23,8 +27,9 @@ public class StarRendererMixin {
         return 0.25F;
     }
 
-//    @Redirect(method = "drawStars", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextFloat()F", ordinal = 3))
-//    private float trigDistribution(RandomSource random) {
-//        return random.nextFloat() * random.nextFloat();
-//    }
+    @WrapOperation(method = "drawStars", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextFloat()F", ordinal = 3))
+    private float trigDistribution(RandomSource instance, Operation<Float> original) {
+        var value = original.call(instance);
+        return value * value;
+    }
 }
