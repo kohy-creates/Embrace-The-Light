@@ -1,18 +1,13 @@
 package xyz.kohara.etl;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.util.Mth;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Unique;
 
 @Mod(EmbraceTheLight.MOD_ID)
 public class EmbraceTheLight {
@@ -24,7 +19,6 @@ public class EmbraceTheLight {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC, MOD_ID + "-client.toml");
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(Config.class);
     }
 
     // Those are for day/night transitions
